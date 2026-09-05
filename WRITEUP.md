@@ -50,12 +50,14 @@ We moved to Ramp, and the change that mattered had almost nothing to do with sof
 
 - **Only buyers get a card.** Not everyone. The set of people who can create an unattributed charge is as small as it can be.
 - **Cards are restricted.** Each one only works at the categories of merchant that buyer actually needs. A card that can't be used at a restaurant can't generate a charge nobody can explain.
-- **The buyer gets texted at the moment of the transaction**, asking for a memo.
-- **The memo has to contain the last six of the VIN.** If it doesn't, Ramp locks the card until it's filled in.
+- **The buyer is prompted for a memo as soon as the transaction posts**, and our policy requires the last six of the VIN in it.
+- **A missing memo eventually locks the card.** Ramp's Missing Items Auto-Lock enforces the memo requirement on a deadline you choose — 3, 7, 14, 30 or 60 days after the transaction clears. Miss it and the cardholder's funds lock, declining new transactions until they fill it in; supply the memo and they unlock within about an hour.
 
-That last mechanism is Ramp's, not mine — it's a policy setting, and I turned it on. What I did was diagnose that a configuration switch was worth more than any parser I could write, then rebuild the process around it: who carries a card, what each card can buy, what the memo has to contain, and what happens downstream when it's wrong anyway.
+Those mechanisms are Ramp's, not mine — they're policy settings, and I turned them on. What I did was diagnose that a configuration switch was worth more than any parser I could write, then rebuild the process around it: who carries a card, what each card can buy, what the memo has to contain, how long they have, and what happens downstream when it's wrong anyway.
 
-Because look at what it changes. At month end, "what was this charge for?" is a *reconstruction* problem — the answer is gone and has to be inferred from receipts, memory, and phone calls. At the register, thirty seconds after the purchase, it isn't a problem at all. The buyer is standing next to the car. He knows exactly what he just bought and why. Asking then costs him six characters.
+The deadline is the part I'd underline. It would be easy to read "lock the card" as instant enforcement, and instant enforcement would be a bad design — nobody should have a card declined mid-purchase because they were slow typing. A grace period followed by a hard stop is the right shape: it makes the requirement real without making it hostile, and in practice almost nobody reaches the deadline, because the prompt already arrived while they still remembered the answer.
+
+That's the whole mechanic. At month end, "what was this charge for?" is a *reconstruction* problem — the answer is gone and has to be inferred from receipts, memory, and phone calls. Minutes after the purchase, it isn't a problem at all. The buyer is standing next to the car. He knows exactly what he just bought and why. Asking then costs him six characters.
 
 **The information was never hard to capture. We were just asking at the only moment it was expensive.**
 
