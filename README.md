@@ -4,6 +4,8 @@ Attribute payment-card charges and vendor checks to individual vehicles by extra
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE) ![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6) ![Tests](https://img.shields.io/badge/tests-40%20passing-brightgreen)
 
+> 📄 **[You can't parse your way out of a data-capture problem](./WRITEUP.md)** — why this library exists, what it didn't fix, and how month-end close went from two weeks to under two days.
+
 ---
 
 ## The problem
