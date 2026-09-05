@@ -1,0 +1,19 @@
+{
+  "name": "vin-attribution",
+  "version": "1.0.0",
+  "description": "Attribute payment-card charges and vendor checks to individual vehicles by extracting VIN suffixes from free-text memos.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["vin", "automotive", "reconciliation", "attribution", "expense", "fuzzy-matching"],
+  "license": "MIT",
+  "devDependencies": { "typescript": "^5.6.0", "vitest": "^2.1.0" }
+}
