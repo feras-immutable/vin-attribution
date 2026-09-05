@@ -4,7 +4,7 @@
 
 ---
 
-I buy and sell cars wholesale. A few dozen a month, bought at auction, reconditioned, resold. It is a margin business: you make a few thousand dollars on a good car and you lose money on a bad one, and the difference between those two outcomes is often a couple of parts orders and a mechanic's invoice.
+I buy and sell cars wholesale — bought at auction, reconditioned, resold. It is a margin business: you make a few thousand dollars on a good car and you lose money on a bad one, and the difference between those two outcomes is often a couple of parts orders and a mechanic's invoice.
 
 Which means the only number that matters is what a specific car actually cost me. And for a long time, I couldn't tell you.
 
@@ -53,7 +53,7 @@ We moved to Ramp, and the change that mattered had almost nothing to do with sof
 - **The buyer gets texted at the moment of the transaction**, asking for a memo.
 - **The memo has to contain the last six of the VIN.** If it doesn't, Ramp locks the card until it's filled in.
 
-That last mechanism is Ramp's, not mine — it's a policy setting, and I turned it on. But the design decision was recognizing that it was the whole answer.
+That last mechanism is Ramp's, not mine — it's a policy setting, and I turned it on. What I did was diagnose that a configuration switch was worth more than any parser I could write, then rebuild the process around it: who carries a card, what each card can buy, what the memo has to contain, and what happens downstream when it's wrong anyway.
 
 Because look at what it changes. At month end, "what was this charge for?" is a *reconstruction* problem — the answer is gone and has to be inferred from receipts, memory, and phone calls. At the register, thirty seconds after the purchase, it isn't a problem at all. The buyer is standing next to the car. He knows exactly what he just bought and why. Asking then costs him six characters.
 
@@ -64,6 +64,15 @@ The same principle runs on the accounting side. Vendor payments go out as checks
 ## What still needs software
 
 Policy gets you most of the way. It doesn't get you all the way, and the gap is where the code lives.
+
+```
+Ramp memo  ─┐
+            ├─→  extractor  →  VIN resolution  →  attribution  →  vehicle P&L
+QB check   ─┘                        │
+                                     └─→  typed exception queue  →  human
+```
+
+Everything above resolves automatically or lands in the queue with a reason attached. There is no third outcome, and nothing silently disappears.
 
 Memos are typed on a phone, by someone in a hurry, standing at a counter. They look like this:
 
