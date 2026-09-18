@@ -36,7 +36,7 @@ That last part is worth sitting with. A tenth to a fifth of variable spend, on a
 
 ## The fix I would have built first
 
-My instinct — and I think most engineers' instinct — was to get better at matching.
+My instinct — and I think most people's instinct — was to get better at matching.
 
 Build a parser. Pull VINs out of receipt text. Fuzzy-match merchant names against a vendor table. Correlate charge dates against which cars were in recon that week. Maybe OCR the receipt photos. Build something clever enough to reconstruct intent from the evidence.
 
@@ -46,14 +46,14 @@ The close wasn't slow because matching was hard. The close was slow because we w
 
 ## The actual fix
 
-We moved to Ramp, and the change that mattered had almost nothing to do with software I wrote.
+We moved to Ramp, and the change that mattered had almost nothing to do with software I built.
 
 - **Only buyers get a card.** Not everyone. The set of people who can create an unattributed charge is as small as it can be.
 - **Cards are restricted.** Each one only works at the categories of merchant that buyer actually needs. A card that can't be used at a restaurant can't generate a charge nobody can explain.
 - **The buyer is prompted for a memo as soon as the transaction posts**, and our policy requires the last six of the VIN in it.
 - **A missing memo eventually locks the card.** Ramp's Missing Items Auto-Lock enforces the memo requirement on a deadline you choose — 3, 7, 14, 30 or 60 days after the transaction clears. Miss it and the cardholder's funds lock, declining new transactions until they fill it in; supply the memo and they unlock within about an hour.
 
-Those mechanisms are Ramp's, not mine — they're policy settings, and I turned them on. What I did was diagnose that a configuration switch was worth more than any parser I could write, then rebuild the process around it: who carries a card, what each card can buy, what the memo has to contain, how long they have, and what happens downstream when it's wrong anyway.
+Those mechanisms are Ramp's, not mine — they're policy settings, and I turned them on. What I did was diagnose that a configuration switch was worth more than any parser I could build, then rebuild the process around it: who carries a card, what each card can buy, what the memo has to contain, how long they have, and what happens downstream when it's wrong anyway.
 
 The deadline is the part I'd underline. It would be easy to read "lock the card" as instant enforcement, and instant enforcement would be a bad design — nobody should have a card declined mid-purchase because they were slow typing. A grace period followed by a hard stop is the right shape: it makes the requirement real without making it hostile, and in practice almost nobody reaches the deadline, because the prompt already arrived while they still remembered the answer.
 
@@ -74,7 +74,7 @@ QB check   ─┘                        │
                                      └─→  typed exception queue  →  human
 ```
 
-Everything above resolves automatically or lands in the queue with a reason attached. There is no third outcome, and nothing silently disappears.
+Everything above resolves automatically or lands in the queue with a reason attached. There is no third outcome, and nothing silently disappears. That's true today for Ramp card charges. The QuickBooks check path in our platform predates this library and still drops what it can't match instead of queueing it; moving it onto the same extractors and queue is the next piece of work.
 
 Memos are typed on a phone, by someone in a hurry, standing at a counter. They look like this:
 
@@ -107,16 +107,16 @@ That last one is rare and worth handling anyway. Two vehicles can share a last-s
 
 The typed reasons exist because I wanted the queue to answer a question, not just hold work.
 
-A 25% failure rate tells you nothing on its own. The *composition* of that 25% tells you everything:
+Say a quarter of charges fail to match. That number tells you nothing on its own. The *composition* of that quarter tells you everything:
 
 - Mostly `no_vin` → a **process** problem. People aren't entering VINs. The fix is policy, not code.
 - Mostly `vin_not_in_inventory` → a **coverage** problem. The parser is fine; your inventory sync is incomplete or your matching window is too narrow.
 
-When I looked, the residual was overwhelmingly `no_vin`.
+When I looked (early September 2026), 99 of the 110 unmatched card charges were `no_vin`, 11 were `vin_not_in_inventory`, and none were ambiguous.
 
 Which means the thing I would have built first — a smarter matcher — would have moved almost nothing. The extraction wasn't failing. It was being handed memos with nothing in them, from the specific corners the card policy doesn't reach: a mechanic paid outside the card system, a charge made before a car was entered, an edge case in the enforcement.
 
-The instrumentation didn't tell me my code was good. It told me my code was not the constraint, which is a more useful thing to learn and the opposite of what I expected.
+The instrumentation didn't tell me the code was good. It told me the code was not the constraint, which is a more useful thing to learn and the opposite of what I expected.
 
 ## Where it ended up
 
@@ -130,9 +130,9 @@ Closing the month is now mostly checking that the numbers agree, rather than ass
 
 ## What I'd do differently
 
-**I'd have moved the question upstream a year earlier.** I spent real time thinking about how to match better before I thought about how to capture better. The capture change took an afternoon of policy configuration and was worth more than any parser I could have written.
+**I'd have moved the question upstream a year earlier.** I spent real time thinking about how to match better before I thought about how to capture better. The capture change took an afternoon of policy configuration and was worth more than any parser I could have built.
 
-**I'd type the failure reasons from day one.** I added them because the queue was annoying to triage, not because I planned to learn anything from them. They turned out to be the most valuable thing in the system, because they're what distinguishes "my code is wrong" from "my process is wrong" — and I would have guessed wrong.
+**I'd type the failure reasons from day one.** I added them because the queue was annoying to triage, not because I planned to learn anything from them. They turned out to be the most valuable thing in the system, because they're what distinguishes "the code is wrong" from "the process is wrong" — and I would have guessed wrong.
 
 **I'd resist the fallback.** An early version of the strict extractor, having rejected every candidate as a date or a round number, returned one anyway on the theory that a questionable match beats nothing. That made the filter decorative. It now returns nothing and lets the queue do its job. A system that quietly downgrades its own guarantees under pressure is worse than one that admits it doesn't know.
 
