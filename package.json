@@ -5,15 +5,36 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
-  "files": ["dist", "README.md", "LICENSE"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "build": "tsc",
+    "build": "node api.js && tsc",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["vin", "automotive", "reconciliation", "attribution", "expense", "fuzzy-matching"],
+  "keywords": [
+    "vin",
+    "automotive",
+    "reconciliation",
+    "attribution",
+    "expense",
+    "fuzzy-matching"
+  ],
   "license": "MIT",
-  "devDependencies": { "typescript": "^5.6.0", "vitest": "^2.1.0" }
+  "devDependencies": {
+    "dotenv": "^8.2.0",
+    "node-fetch": "^3.3.2",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
 }

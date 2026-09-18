@@ -94,13 +94,13 @@ Loose mode's last-resort strategy grabs a trailing six-character run off the fin
 type UnmatchedReason = "no_vin" | "vin_not_in_inventory" | "ambiguous_vin";
 ```
 
-This is the part that actually matters in production. A 30% failure rate tells you nothing on its own. The *composition* of that 30% tells you everything:
+This is the part that actually matters in production. Say 30% of charges fail to match. That number tells you nothing on its own. The *composition* of that 30% tells you everything:
 
 - Dominated by **`no_vin`** → a process problem. People are not entering VINs. The fix is card policy, memo enforcement, or one card per buyer. Improving the parser accomplishes nothing.
 - Dominated by **`vin_not_in_inventory`** → a coverage problem. The parser works; your inventory sync is incomplete or your matching window is too narrow.
 - Any **`ambiguous_vin`** → two vehicles share a suffix. Rare, but never guess — surface both and let a human pick.
 
-Running this in a real dealership, the residual was overwhelmingly `no_vin`. Which meant the obvious instinct — write a better regex — would have moved nothing. The instrumentation is what said so.
+Running this logic in a real dealership (early September 2026), 99 of 110 unmatched card charges were `no_vin`, 11 were `vin_not_in_inventory`, and none were ambiguous. Which meant the obvious instinct — write a better regex — would have moved nothing. The instrumentation is what said so.
 
 The absolute match rate is a property of the deployment's data hygiene, not of this library. What the library owes you is an honest account of *why* the misses missed.
 
@@ -139,7 +139,11 @@ npm run build
 
 ## Background
 
-Extracted from the expense-reconciliation layer of a production wholesale automotive operations platform, where it attributes card charges and vendor checks to vehicle-level P&L across several dealerships. The logic here is the general part; the platform-specific storage, sync and review-queue plumbing is not included.
+Generalized from the expense-reconciliation layer of a production wholesale automotive operations platform, where the same approach attributes our Ramp card charges to vehicle-level P&L. The platform's QuickBooks check path still runs an older extractor and is being moved onto this library. The logic here is the general part; the platform-specific storage, sync and review-queue plumbing is not included.
+
+## How this was built
+
+Designed by Feras Mansi: the matching rules, the loose/strict asymmetry and the failure taxonomy. Implemented with Claude Code, and validated against production transaction data.
 
 ## License
 
